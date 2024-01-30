@@ -1,23 +1,7 @@
 package main
 
-import (
-	"log"
-	"os"
-
-	"github.com/veggiedefender/torrent-client/torrentfile"
-)
+import fs "github.com/veggiedefender/torrent-client/fs"
 
 func main() {
-	inPath := os.Args[1]
-	outPath := os.Args[2]
-
-	tf, err := torrentfile.Open(inPath)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = tf.DownloadToFile(outPath)
-	if err != nil {
-		log.Fatal(err)
-	}
+	fs.Opendottorrent("/Users/shaya/GolandProjects/torrent-client/Убийство Forbrydelsen Сезон 2 Серии 1-10 (10) (Кристоффер Нюхольм) [2009, Дания, Норвегия, Швеция, Германия, триллер, драм [rutracker-5507285].torrent")
 }
