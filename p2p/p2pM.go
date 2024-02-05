@@ -5,17 +5,32 @@ import (
 	"runtime"
 )
 
-func MultiDownload(signals []chan int, torrents []*Torrent) {
-	index := 0
+const (
+	CONTINUE = 1
+	STOP     = 0
+	ERROR    = -1
+)
+
+func MultiDownload(signals []chan int, torrents []*Torrent) [][]byte {
+	results := make([][]byte, len(signals))
+	for i, torrent := range torrents {
+		torrent.DownloadPiece(signals[i])
+	}
+	index := len(signals)
 	for {
 		for i, torrent := range torrents {
-			torrent.DownloadPiece(signals[i])
+			buf, err := torrent.DownloadPiece(signals[i])
+			if err == nil {
+				results[i] = buf
+				// TODO Drop Torrents
+				// TODO add result to current Torrent
+			}
 		}
 		index += 1
-		if index >= len(signals) {
-			signals[index%len(signals)] <- 1
-		}
+		index %= len(signals)
+		signals[index] <- CONTINUE
 	}
+	return results
 }
 
 func (t *Torrent) DownloadPiece(torrent chan int) ([]byte, error) {
@@ -32,7 +47,14 @@ func (t *Torrent) DownloadPiece(torrent chan int) ([]byte, error) {
 
 	for _, peer := range t.Peers {
 		go t.startDownloadWorker(peer, workQueue, results)
-		<-torrent
+		switch <-torrent {
+		case CONTINUE:
+		case ERROR:
+			return nil, nil
+		case STOP:
+			break
+		}
+
 	}
 	// Collect results into a buffer until full
 	buf := make([]byte, t.Length)
