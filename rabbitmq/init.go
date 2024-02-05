@@ -7,11 +7,11 @@ import (
 )
 
 type rbMQ struct {
-	messages chan []byte
+	Messages chan []byte
 	queue    string
 }
 
-func newRabbitMQ(queue string) *rbMQ {
+func NewRabbitMQ(queue string) *rbMQ {
 	return &rbMQ{make(chan []byte), queue}
 }
 
@@ -46,7 +46,7 @@ func producer(ch *amqp.Channel, r *rbMQ) {
 		false,  // immediate
 		amqp.Publishing{
 			ContentType: "text/plain",
-			Body:        []byte(<-r.messages),
+			Body:        []byte(<-r.Messages),
 		})
 	failOnError(err, "Failed to publish a message")
 
@@ -80,7 +80,7 @@ func consumer(ch *amqp.Channel, r *rbMQ) {
 	go func() {
 		for d := range msgs {
 			log.Printf("Received a message: %s", d.Body)
-			r.messages <- d.Body
+			r.Messages <- d.Body
 		}
 	}()
 

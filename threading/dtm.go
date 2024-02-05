@@ -57,7 +57,7 @@ func redesignClientsPriority(beginInx int, endInx int, cl []*client.Client) []*c
 }
 
 func episodeDownload(obs *observer) { //pause for client
-	obs.StopQueque()
+	obs.ctrl <- 2
 	//attemptDownload(newobs){<-newobs...onRabbitMqBlock {newobs<-1} onRabbitMqUnblock{<-newobs}newobs<-1
 	<-obs.ctrl
 }
